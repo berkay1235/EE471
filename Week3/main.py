@@ -1,13 +1,11 @@
-from custom_classes import MediaItem
+from custom_classes import DVD
 
 
-book = MediaItem("1984", "George Orwell")
-movie = MediaItem("Interstellar", "Christopher Nolan")
+dvd = DVD("Interstellar", "Christopher Nolan", 169)
 
-print(book)
-print(movie)
+print(dvd)
 
-print(book.checkout())
+result = dvd.checkout()
+print(result)
 
-print(book)
-print(movie)
+print(dvd)
