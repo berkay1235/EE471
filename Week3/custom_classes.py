@@ -42,7 +42,7 @@ class DVD(MediaItem):
     """Represent a DVD with an additional duration."""
 
     def __init__(self, title, author, duration, is_available=True):
-        """Initialize a DVD with its duration."""
+        """Initialize a DVD with its duration in minutes."""
         super().__init__(title, author, is_available)
         self.duration = duration
 
