@@ -20,7 +20,7 @@ class MediaItem:
         self.is_available = True
 
     def __str__(self):
-        """Return a readable description of the media item."""
+        """Return the item as 'Title by Author [Available/Checked Out]'."""
         status = "Available" if self.is_available else "Checked Out"
         return f"{self.title} by {self.author} [{status}]"
 
