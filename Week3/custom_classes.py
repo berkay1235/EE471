@@ -1,3 +1,4 @@
+CHECKOUT_SUCCESS_MESSAGE = "Successful checkout"
 class MediaItem:
     """Represent a generic media item in a library."""
 
@@ -8,12 +9,13 @@ class MediaItem:
         self.is_available = is_available
 
     def checkout(self):
-        """Check out the item if it is currently available."""
+        """Check out the item and return "Successful checkout" or "Already out"."""
         if self.is_available:
             self.is_available = False
-            return "Successful checkout"
+            return CHECKOUT_SUCCESS_MESSAGE
 
         return "Already out"
+
 
     def return_item(self):
         """Mark the item as available again."""
@@ -50,7 +52,7 @@ class DVD(MediaItem):
         """Check out the DVD and print a handling reminder if successful."""
         result = super().checkout()
 
-        if result == "Successful checkout":
+        if result == CHECKOUT_SUCCESS_MESSAGE:
             print("Handle with care: Do not scratch the disc.")
 
         return result
