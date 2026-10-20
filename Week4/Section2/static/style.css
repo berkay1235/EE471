@@ -1,0 +1,148 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    color: #222;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 40px auto;
+}
+
+header {
+    margin-bottom: 20px;
+}
+
+h1 {
+    font-size: 36px;
+    margin: 0;
+}
+
+.toolbar {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.toolbar select {
+    padding: 8px 12px;
+}
+
+.error {
+    min-height: 24px;
+    margin-bottom: 15px;
+    color: #b00020;
+    font-weight: bold;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+}
+
+.library-panel,
+.form-panel {
+    background: white;
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.item-card {
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 14px;
+}
+
+.item-card h3 {
+    margin: 0 0 6px 0;
+}
+
+.item-meta {
+    margin: 4px 0;
+    color: #555;
+}
+
+.badge {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: bold;
+    background: #e6e6e6;
+}
+
+.item-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+}
+
+button {
+    padding: 9px 14px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.85;
+}
+
+.checkout-btn {
+    background: #dceeff;
+}
+
+.return-btn {
+    background: #dcf5e8;
+}
+
+.edit-btn {
+    background: #fff1c7;
+}
+
+.delete-btn {
+    background: #ffd9d9;
+}
+
+.form-panel form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.form-panel input,
+.form-panel select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.hidden {
+    display: none;
+}
+
+.empty-state {
+    display: none;
+    color: #777;
+    padding: 20px 0;
+}
+
+@media (max-width: 800px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+}

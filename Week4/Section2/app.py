@@ -1,5 +1,4 @@
-from flask import Flask, jsonify, request
-
+from flask import Flask, jsonify, render_template, request
 from library_classes import (
     Book,
     DVD,
@@ -10,6 +9,9 @@ from library_classes import (
 
 
 app = Flask(__name__)
+@app.route("/")
+def index():
+    return render_template("index.html")
 
 library = LibraryCollection()
 
