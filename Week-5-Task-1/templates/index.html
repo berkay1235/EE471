@@ -13,29 +13,32 @@
       padding: 16px;
     }
     .card {
-      background: #fff; border-radius: 14px; padding: 32px; width: 100%; max-width: 540px;
+      background: #fff; border-radius: 14px; padding: 32px; width: 100%; max-width: 680px;
       box-shadow: 0 10px 30px rgba(0,0,0,.2);
     }
     h1 { text-align: center; margin: 0; color: #333; }
     .subtitle { text-align: center; color: #888; font-size: 13px; margin: 6px 0 20px; }
 
     /* Tabs */
-    .tabs { display: flex; border-bottom: 2px solid #eee; margin-bottom: 20px; }
+    .tabs { display: flex; flex-wrap: wrap; border-bottom: 2px solid #eee; margin-bottom: 20px; }
     .tab {
-      flex: 1; padding: 12px; background: none; border: none; border-bottom: 3px solid transparent;
-      margin-bottom: -2px; font-size: 14px; font-weight: 600; color: #777; cursor: pointer; border-radius: 0;
+      flex: 1; min-width: 110px; padding: 11px 6px; background: none; border: none; border-bottom: 3px solid transparent;
+      margin-bottom: -2px; font-size: 13px; font-weight: 600; color: #777; cursor: pointer; border-radius: 0;
     }
     .tab.active { color: #667eea; border-bottom-color: #667eea; }
     .panel { display: none; }
     .panel.active { display: block; }
+    .hint { font-size: 12.5px; color: #777; background: #f6f6fb; border-radius: 8px; padding: 10px 12px; margin: 0 0 14px; }
 
     label { font-size: 14px; color: #444; display: block; margin-bottom: 6px; }
     textarea, select {
       width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;
       font-family: inherit;
     }
-    textarea { height: 110px; resize: vertical; }
+    textarea { height: 100px; resize: vertical; }
     select { margin-bottom: 14px; }
+    .two { display: flex; gap: 10px; }
+    .two > div { flex: 1; }
     .row { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
     button {
       flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;
@@ -56,31 +59,56 @@
            animation: blink 1s infinite; }
     @keyframes blink { 50% { opacity: .2; } }
 
-    .result { margin-top: 16px; padding: 16px; border: 1px solid #e5e5e5; border-radius: 8px; background: #fafafa; display: none; }
-    .result.blue { border-color: #cfe0ff; background: #f3f8ff; }
+    .result { margin-top: 16px; padding: 16px; border: 1px solid #cfe0ff; border-radius: 8px; background: #f3f8ff; display: none; }
+    .result.grey { border-color: #e5e5e5; background: #fafafa; }
     .result h3 { margin: 0 0 10px; font-size: 15px; color: #444; }
+    .result h4 { margin: 14px 0 6px; font-size: 13px; color: #666; }
     audio { width: 100%; }
-    #sttPreview { margin-top: 14px; display: none; }
+    .preview { margin-top: 14px; display: none; }
     .download {
       display: block; text-align: center; margin-top: 12px; padding: 11px; border-radius: 8px;
       background: #3399ff; color: #fff; text-decoration: none; font-weight: 600; font-size: 14px;
     }
     .transcript { background: #fff; border: 1px solid #e3e3e3; border-radius: 6px; padding: 12px; font-size: 14px;
                   color: #333; min-height: 44px; white-space: pre-wrap; }
-    .copy { margin-top: 10px; flex: none; padding: 8px 14px; background: #eee; color: #333; }
+    .small-btn { margin-top: 10px; flex: none; padding: 8px 14px; background: #eee; color: #333; }
+
+    /* Diarization */
+    .seg { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid #e8eefc; font-size: 14px; }
+    .seg:last-child { border-bottom: none; }
+    .speaker { flex: none; font-size: 12px; font-weight: 700; color: #fff; padding: 3px 9px; border-radius: 12px; }
+
+    /* Pronunciation */
+    .score { display: flex; align-items: center; gap: 10px; margin: 6px 0; font-size: 13px; }
+    .score .name { width: 110px; color: #555; }
+    .score .bar { flex: 1; height: 10px; background: #e6e9f2; border-radius: 6px; overflow: hidden; }
+    .score .fill { height: 100%; border-radius: 6px; }
+    .score .val { width: 38px; text-align: right; font-weight: 700; color: #333; }
+    .words { line-height: 2.1; font-size: 15px; }
+    .w { padding: 3px 6px; border-radius: 5px; margin-right: 3px; white-space: nowrap; }
+    .w.good { background: #e3f6e8; color: #1e7a34; }
+    .w.mid { background: #fff4d6; color: #8a6100; }
+    .w.bad { background: #fde3e1; color: #b3261e; }
+    .w.omit { background: #eee; color: #888; text-decoration: line-through; }
+    .w.insert { background: #ffe9d1; color: #a35200; text-decoration: underline wavy; }
+    .legend { font-size: 12px; color: #777; margin-top: 8px; }
+    .legend span { margin-right: 6px; }
   </style>
 </head>
 <body>
   <div class="card">
     <h1>🎤 Azure Speech Services</h1>
-    <p class="subtitle">Text-to-Speech &amp; Speech-to-Text powered by Azure Cognitive Services</p>
+    <p class="subtitle">Text-to-Speech, Speech-to-Text, Diarization, Translation &amp; Pronunciation — powered by Azure</p>
 
     <div class="tabs">
       <button class="tab active" data-panel="ttsPanel">Text to Speech</button>
       <button class="tab" data-panel="sttPanel">Speech to Text</button>
+      <button class="tab" data-panel="diaPanel">Diarization</button>
+      <button class="tab" data-panel="trPanel">Translation</button>
+      <button class="tab" data-panel="paPanel">Pronunciation</button>
     </div>
 
-    <!-- ===================== TEXT TO SPEECH ===================== -->
+    <!-- ===================== 1) TEXT TO SPEECH ===================== -->
     <section class="panel active" id="ttsPanel">
       <label for="voice">Voice:</label>
       <select id="voice">
@@ -100,41 +128,143 @@
 
       <div class="status" id="ttsStatus"></div>
 
-      <div class="result" id="ttsResult">
+      <div class="result grey" id="ttsResult">
         <h3>Generated Audio:</h3>
         <audio id="ttsPlayer" controls></audio>
         <a class="download" id="downloadLink" download="speech.wav">⬇ Download Audio</a>
       </div>
     </section>
 
-    <!-- ===================== SPEECH TO TEXT ===================== -->
+    <!-- ===================== 2) SPEECH TO TEXT ===================== -->
     <section class="panel" id="sttPanel">
-      <label for="language">Language:</label>
-      <select id="language">
+      <label for="sttLang">Language:</label>
+      <select id="sttLang">
         <option value="en-US">English (US)</option>
         <option value="tr-TR">Türkçe</option>
       </select>
 
       <label>Record or upload audio to convert to text:</label>
-      <div class="row" style="margin-top:0">
-        <button class="primary" id="startBtn">🎙️ Start Recording</button>
-        <button class="danger" id="stopBtn" disabled>⏹ Stop Recording</button>
-        <input class="file-input" type="file" id="fileInput" accept="audio/*">
-      </div>
-
-      <audio id="sttPreview" controls></audio>
-
-      <div class="status" id="sttStatus"></div>
+      <div class="audio-input" data-name="stt"></div>
 
       <div class="row">
-        <button class="primary" id="transcribeBtn" disabled>📝 Transcribe Audio</button>
-        <button class="secondary" id="sttClearBtn">Clear</button>
+        <button class="primary" id="sttGo" disabled>📝 Transcribe Audio</button>
+        <button class="secondary" id="sttClear">Clear</button>
+      </div>
+      <div class="status" id="sttStatus"></div>
+
+      <div class="result" id="sttResult">
+        <h3>Transcription:</h3>
+        <div class="transcript" id="sttText"></div>
+        <button class="small-btn" id="sttCopy">📋 Copy Text</button>
+      </div>
+    </section>
+
+    <!-- ===================== 3) DIARIZATION ===================== -->
+    <section class="panel" id="diaPanel">
+      <p class="hint">Real-time diarization separates <b>who said what</b>. Record a conversation with two or more people
+        (or upload one) and each sentence is labelled with its speaker.</p>
+
+      <label for="diaLang">Language:</label>
+      <select id="diaLang">
+        <option value="en-US">English (US)</option>
+        <option value="tr-TR">Türkçe</option>
+      </select>
+
+      <label>Record or upload a conversation:</label>
+      <div class="audio-input" data-name="dia"></div>
+
+      <div class="row">
+        <button class="primary" id="diaGo" disabled>👥 Identify Speakers</button>
+        <button class="secondary" id="diaClear">Clear</button>
+      </div>
+      <div class="status" id="diaStatus"></div>
+
+      <div class="result" id="diaResult">
+        <h3>Conversation:</h3>
+        <div id="diaList"></div>
+      </div>
+    </section>
+
+    <!-- ===================== 4) TRANSLATION ===================== -->
+    <section class="panel" id="trPanel">
+      <p class="hint">Speak in one language and get the text — and the voice — in another.</p>
+
+      <div class="two">
+        <div>
+          <label for="trFrom">Spoken language:</label>
+          <select id="trFrom">
+            <option value="tr-TR">Türkçe</option>
+            <option value="en-US">English (US)</option>
+            <option value="de-DE">Deutsch</option>
+            <option value="fr-FR">Français</option>
+            <option value="es-ES">Español</option>
+          </select>
+        </div>
+        <div>
+          <label for="trTo">Translate to:</label>
+          <select id="trTo">
+            <option value="en">English</option>
+            <option value="tr">Türkçe</option>
+            <option value="de">Deutsch</option>
+            <option value="fr">Français</option>
+            <option value="es">Español</option>
+          </select>
+        </div>
       </div>
 
-      <div class="result blue" id="sttResult">
-        <h3>Transcription:</h3>
-        <div class="transcript" id="transcript"></div>
-        <button class="copy" id="copyBtn">📋 Copy Text</button>
+      <label>Record or upload speech:</label>
+      <div class="audio-input" data-name="tr"></div>
+
+      <div class="row">
+        <button class="primary" id="trGo" disabled>🌍 Translate Speech</button>
+        <button class="secondary" id="trClear">Clear</button>
+      </div>
+      <div class="status" id="trStatus"></div>
+
+      <div class="result" id="trResult">
+        <h4>Original:</h4>
+        <div class="transcript" id="trOriginal"></div>
+        <h4>Translation:</h4>
+        <div class="transcript" id="trTranslation"></div>
+        <button class="small-btn" id="trSpeak">🔊 Speak Translation</button>
+        <audio id="trPlayer" class="preview" controls></audio>
+      </div>
+    </section>
+
+    <!-- ===================== 5) PRONUNCIATION ===================== -->
+    <section class="panel" id="paPanel">
+      <p class="hint">Read the sentence below out loud. Azure scores your accuracy, fluency, completeness
+        and prosody, and colours every word.</p>
+
+      <label for="paLang">Language:</label>
+      <select id="paLang">
+        <option value="en-US">English (US)</option>
+        <option value="en-GB">English (UK)</option>
+      </select>
+
+      <label for="paRef">Reference sentence:</label>
+      <textarea id="paRef">The quick brown fox jumps over the lazy dog.</textarea>
+
+      <label style="margin-top:12px">Record yourself reading it (or upload):</label>
+      <div class="audio-input" data-name="pa"></div>
+
+      <div class="row">
+        <button class="primary" id="paGo" disabled>🎯 Assess Pronunciation</button>
+        <button class="secondary" id="paClear">Clear</button>
+      </div>
+      <div class="status" id="paStatus"></div>
+
+      <div class="result" id="paResult">
+        <h3>Scores:</h3>
+        <div id="paScores"></div>
+        <h4>Word by word:</h4>
+        <div class="words" id="paWords"></div>
+        <div class="legend">
+          <span class="w good">≥ 80</span><span class="w mid">60–79</span><span class="w bad">&lt; 60</span>
+          <span class="w omit">omitted</span><span class="w insert">inserted</span>
+        </div>
+        <h4>What Azure heard:</h4>
+        <div class="transcript" id="paHeard"></div>
       </div>
     </section>
   </div>
@@ -160,6 +290,19 @@
     // ================= TEXT TO SPEECH =================
     let ttsUrl = null;
 
+    async function synthesize(text, voice) {
+      const res = await fetch("/synthesize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, voice })
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Server error");
+      }
+      return URL.createObjectURL(await res.blob());
+    }
+
     $("synthBtn").addEventListener("click", async () => {
       const text = $("text").value.trim();
       const status = $("ttsStatus");
@@ -167,22 +310,9 @@
 
       $("synthBtn").disabled = true;
       showStatus(status, "Synthesizing...", "info");
-
       try {
-        const res = await fetch("/synthesize", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text, voice: $("voice").value })
-        });
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.error || "Server error");
-        }
-
-        const blob = await res.blob();
         if (ttsUrl) URL.revokeObjectURL(ttsUrl);
-        ttsUrl = URL.createObjectURL(blob);
-
+        ttsUrl = await synthesize(text, $("voice").value);
         $("ttsPlayer").src = ttsUrl;
         $("downloadLink").href = ttsUrl;
         $("ttsResult").style.display = "block";
@@ -202,58 +332,87 @@
       $("ttsPlayer").removeAttribute("src");
     });
 
-    // ================= SPEECH TO TEXT =================
-    let recorder = null;     // MediaRecorder
-    let chunks = [];         // recorded pieces
-    let currentAudio = null; // Blob/File that will be transcribed
+    // ================= SHARED: audio input (record / upload) =================
+    // Every speech tab uses the same Record / Stop / Choose File block.
+    // makeAudioInput builds it inside <div class="audio-input" data-name="..."> and
+    // remembers the chosen audio for that tab.
+    const audioInputs = {};
 
-    function setAudio(blob) {
-      currentAudio = blob;
-      $("sttPreview").src = URL.createObjectURL(blob);
-      $("sttPreview").style.display = "block";
-      $("transcribeBtn").disabled = false;
+    function makeAudioInput(box) {
+      const name = box.dataset.name;
+      box.innerHTML = `
+        <div class="row" style="margin-top:0">
+          <button class="primary rec-start">🎙️ Start Recording</button>
+          <button class="danger rec-stop" disabled>⏹ Stop Recording</button>
+          <input class="file-input" type="file" accept="audio/*">
+        </div>
+        <audio class="preview" controls></audio>`;
+
+      const startBtn = box.querySelector(".rec-start");
+      const stopBtn = box.querySelector(".rec-stop");
+      const fileInput = box.querySelector("input");
+      const preview = box.querySelector("audio");
+      const goBtn = $(name + "Go");
+      const status = $(name + "Status");
+
+      const state = { blob: null, recorder: null, chunks: [] };
+
+      function setAudio(blob) {
+        state.blob = blob;
+        preview.src = URL.createObjectURL(blob);
+        preview.style.display = "block";
+        goBtn.disabled = false;
+      }
+
+      startBtn.addEventListener("click", async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          state.recorder = new MediaRecorder(stream);
+          state.chunks = [];
+          state.recorder.ondataavailable = e => { if (e.data.size > 0) state.chunks.push(e.data); };
+          state.recorder.onstop = () => {
+            stream.getTracks().forEach(t => t.stop());       // release the mic
+            setAudio(new Blob(state.chunks, { type: state.recorder.mimeType }));
+            showStatus(status, "Recording finished. Press the button below.", "info");
+          };
+          state.recorder.start();
+          fileInput.value = "";
+          startBtn.disabled = true;
+          stopBtn.disabled = false;
+          goBtn.disabled = true;
+          showStatus(status, '<span class="dot"></span>Recording...', "rec");
+        } catch (e) {
+          showStatus(status, "✗ Microphone access denied: " + e.message, "err");
+        }
+      });
+
+      stopBtn.addEventListener("click", () => {
+        if (state.recorder && state.recorder.state === "recording") state.recorder.stop();
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+      });
+
+      fileInput.addEventListener("change", () => {
+        const f = fileInput.files[0];
+        if (f) { setAudio(f); showStatus(status, "File selected: " + f.name, "info"); }
+      });
+
+      state.reset = () => {
+        state.blob = null;
+        fileInput.value = "";
+        preview.removeAttribute("src");
+        preview.style.display = "none";
+        goBtn.disabled = true;
+        status.className = "status";
+      };
+
+      audioInputs[name] = state;
     }
 
-    // 1) Microphone recording
-    $("startBtn").addEventListener("click", async () => {
-      const status = $("sttStatus");
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        recorder = new MediaRecorder(stream);
-        chunks = [];
-        recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
-        recorder.onstop = () => {
-          stream.getTracks().forEach(t => t.stop());           // release the mic
-          setAudio(new Blob(chunks, { type: recorder.mimeType }));
-          showStatus(status, "Recording finished. Press “Transcribe Audio”.", "info");
-        };
-        recorder.start();
-        $("fileInput").value = "";
-        $("startBtn").disabled = true;
-        $("stopBtn").disabled = false;
-        $("transcribeBtn").disabled = true;
-        showStatus(status, '<span class="dot"></span>Recording...', "rec");
-      } catch (e) {
-        showStatus(status, "✗ Microphone access denied: " + e.message, "err");
-      }
-    });
+    document.querySelectorAll(".audio-input").forEach(makeAudioInput);
 
-    $("stopBtn").addEventListener("click", () => {
-      if (recorder && recorder.state === "recording") recorder.stop();
-      $("startBtn").disabled = false;
-      $("stopBtn").disabled = true;
-    });
-
-    // 2) File upload
-    $("fileInput").addEventListener("change", () => {
-      const f = $("fileInput").files[0];
-      if (f) {
-        setAudio(f);
-        showStatus($("sttStatus"), "File selected: " + f.name, "info");
-      }
-    });
-
-    // 3) Convert any audio (webm, mp4, mp3, wav...) to 16 kHz mono WAV
+    // ================= SHARED: convert any audio to 16 kHz mono WAV =================
+    // Azure reads WAV most reliably, so we convert in the browser (no ffmpeg needed).
     async function toWav16k(blob) {
       const ctx = new AudioContext();
       const decoded = await ctx.decodeAudioData(await blob.arrayBuffer());
@@ -289,49 +448,174 @@
       return new Blob([view], { type: "audio/wav" });
     }
 
-    // 4) Send to Flask and show the text
-    $("transcribeBtn").addEventListener("click", async () => {
-      const status = $("sttStatus");
-      if (!currentAudio) { showStatus(status, "Please record or upload audio first.", "err"); return; }
+    // ================= SHARED: send audio + extra fields to an endpoint =================
+    async function sendAudio(name, url, fields, busyText) {
+      const state = audioInputs[name];
+      const status = $(name + "Status");
+      const goBtn = $(name + "Go");
+      if (!state.blob) { showStatus(status, "Please record or upload audio first.", "err"); return null; }
 
-      $("transcribeBtn").disabled = true;
-      showStatus(status, "Transcribing...", "info");
-
+      goBtn.disabled = true;
+      showStatus(status, busyText, "info");
       try {
-        const wav = await toWav16k(currentAudio);
         const form = new FormData();
-        form.append("audio", wav, "audio.wav");
-        form.append("language", $("language").value);
+        form.append("audio", await toWav16k(state.blob), "audio.wav");
+        for (const [k, v] of Object.entries(fields)) form.append(k, v);
 
-        const res = await fetch("/transcribe", { method: "POST", body: form });
+        const res = await fetch(url, { method: "POST", body: form });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || "Server error");
-
-        $("transcript").textContent = data.text;
-        $("sttResult").style.display = "block";
-        showStatus(status, "✓ Audio transcribed successfully!", "ok");
+        return data;
       } catch (e) {
         showStatus(status, "✗ " + e.message, "err");
+        return null;
       } finally {
-        $("transcribeBtn").disabled = false;
+        goBtn.disabled = false;
       }
+    }
+
+    // ================= SPEECH TO TEXT =================
+    $("sttGo").addEventListener("click", async () => {
+      const data = await sendAudio("stt", "/transcribe", { language: $("sttLang").value }, "Transcribing...");
+      if (!data) return;
+      $("sttText").textContent = data.text;
+      $("sttResult").style.display = "block";
+      showStatus($("sttStatus"), "✓ Audio transcribed successfully!", "ok");
     });
 
-    // 5) Copy & Clear
-    $("copyBtn").addEventListener("click", async () => {
-      await navigator.clipboard.writeText($("transcript").textContent);
+    $("sttCopy").addEventListener("click", async () => {
+      await navigator.clipboard.writeText($("sttText").textContent);
       showStatus($("sttStatus"), "✓ Copied to clipboard!", "ok");
     });
 
-    $("sttClearBtn").addEventListener("click", () => {
-      currentAudio = null;
-      $("fileInput").value = "";
-      $("sttPreview").removeAttribute("src");
-      $("sttPreview").style.display = "none";
+    $("sttClear").addEventListener("click", () => {
+      audioInputs.stt.reset();
       $("sttResult").style.display = "none";
-      $("transcript").textContent = "";
-      $("sttStatus").className = "status";
-      $("transcribeBtn").disabled = true;
+      $("sttText").textContent = "";
+    });
+
+    // ================= DIARIZATION =================
+    const speakerColors = ["#667eea", "#e5734a", "#2e9e6a", "#c2408f", "#d4a017", "#3a8fd6"];
+
+    $("diaGo").addEventListener("click", async () => {
+      const data = await sendAudio("dia", "/diarize", { language: $("diaLang").value }, "Identifying speakers...");
+      if (!data) return;
+
+      const speakers = [];                       // order of first appearance
+      const list = $("diaList");
+      list.innerHTML = "";
+      data.segments.forEach(seg => {
+        if (!speakers.includes(seg.speaker)) speakers.push(seg.speaker);
+        const idx = speakers.indexOf(seg.speaker);
+        const row = document.createElement("div");
+        row.className = "seg";
+        const badge = document.createElement("span");
+        badge.className = "speaker";
+        badge.style.background = speakerColors[idx % speakerColors.length];
+        badge.textContent = seg.speaker === "Unknown" ? "Unknown" : "Speaker " + (idx + 1);
+        const text = document.createElement("span");
+        text.textContent = seg.text;
+        row.append(badge, text);
+        list.appendChild(row);
+      });
+
+      $("diaResult").style.display = "block";
+      showStatus($("diaStatus"), `✓ Found ${speakers.length} speaker(s) in ${data.segments.length} sentence(s).`, "ok");
+    });
+
+    $("diaClear").addEventListener("click", () => {
+      audioInputs.dia.reset();
+      $("diaResult").style.display = "none";
+      $("diaList").innerHTML = "";
+    });
+
+    // ================= TRANSLATION =================
+    const voiceFor = {
+      en: "en-US-JennyNeural", tr: "tr-TR-EmelNeural", de: "de-DE-KatjaNeural",
+      fr: "fr-FR-DeniseNeural", es: "es-ES-ElviraNeural"
+    };
+
+    $("trGo").addEventListener("click", async () => {
+      const data = await sendAudio("tr", "/translate",
+        { source: $("trFrom").value, target: $("trTo").value }, "Translating...");
+      if (!data) return;
+      $("trOriginal").textContent = data.original;
+      $("trTranslation").textContent = data.translation;
+      $("trPlayer").style.display = "none";
+      $("trResult").style.display = "block";
+      showStatus($("trStatus"), "✓ Speech translated successfully!", "ok");
+    });
+
+    // Reuse the Text-to-Speech endpoint to read the translation out loud
+    $("trSpeak").addEventListener("click", async () => {
+      const text = $("trTranslation").textContent.trim();
+      if (!text) return;
+      $("trSpeak").disabled = true;
+      try {
+        $("trPlayer").src = await synthesize(text, voiceFor[$("trTo").value]);
+        $("trPlayer").style.display = "block";
+        $("trPlayer").play();
+      } catch (e) {
+        showStatus($("trStatus"), "✗ " + e.message, "err");
+      } finally {
+        $("trSpeak").disabled = false;
+      }
+    });
+
+    $("trClear").addEventListener("click", () => {
+      audioInputs.tr.reset();
+      $("trResult").style.display = "none";
+      $("trOriginal").textContent = "";
+      $("trTranslation").textContent = "";
+    });
+
+    // ================= PRONUNCIATION ASSESSMENT =================
+    function scoreColor(v) { return v >= 80 ? "#2e9e6a" : v >= 60 ? "#e0a100" : "#d64541"; }
+
+    $("paGo").addEventListener("click", async () => {
+      const reference = $("paRef").value.trim();
+      if (!reference) { showStatus($("paStatus"), "Please enter the reference sentence.", "err"); return; }
+
+      const data = await sendAudio("pa", "/pronunciation",
+        { reference, language: $("paLang").value }, "Assessing pronunciation...");
+      if (!data) return;
+
+      // Score bars
+      const scores = $("paScores");
+      scores.innerHTML = "";
+      for (const [name, value] of Object.entries(data.scores)) {
+        if (value === null || value === undefined) continue;
+        const v = Math.round(value);
+        scores.insertAdjacentHTML("beforeend", `
+          <div class="score">
+            <span class="name">${name}</span>
+            <span class="bar"><span class="fill" style="display:block;width:${v}%;background:${scoreColor(v)}"></span></span>
+            <span class="val">${v}</span>
+          </div>`);
+      }
+
+      // Coloured words
+      const words = $("paWords");
+      words.innerHTML = "";
+      data.words.forEach(w => {
+        const span = document.createElement("span");
+        let cls = w.score >= 80 ? "good" : w.score >= 60 ? "mid" : "bad";
+        if (w.error === "Omission") cls = "omit";
+        if (w.error === "Insertion") cls = "insert";
+        span.className = "w " + cls;
+        span.textContent = w.word;
+        span.title = `${w.word}: ${Math.round(w.score)}${w.error && w.error !== "None" ? " (" + w.error + ")" : ""}`;
+        words.appendChild(span);
+      });
+
+      $("paHeard").textContent = data.recognized;
+      $("paResult").style.display = "block";
+      showStatus($("paStatus"), "✓ Pronunciation assessed!", "ok");
+    });
+
+    $("paClear").addEventListener("click", () => {
+      audioInputs.pa.reset();
+      $("paResult").style.display = "none";
     });
   </script>
 </body>
