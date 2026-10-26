@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Speech-to-Text</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 16px;
+    }
+    .card {
+      background: #fff; border-radius: 14px; padding: 32px; width: 100%; max-width: 520px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.2);
+    }
+    h1 { text-align: center; margin: 0; color: #333; }
+    .subtitle { text-align: center; color: #888; font-size: 13px; margin: 6px 0 24px; }
+    label { font-size: 14px; color: #444; display: block; margin-bottom: 6px; }
+    select {
+      width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;
+      font-family: inherit; margin-bottom: 14px;
+    }
+    .row { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+    button {
+      flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;
+      font-weight: 600;
+    }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    .primary { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; }
+    .danger { background: #e53935; color: #fff; }
+    .secondary { background: #eee; color: #333; }
+    .file-input {
+      flex: 1.4; padding: 9px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; min-width: 0;
+    }
+    .status { margin-top: 16px; padding: 12px; border-radius: 8px; font-size: 14px; text-align: center; display: none; }
+    .status.ok { display: block; background: #e8f8ec; color: #2e7d32; border: 1px solid #c8ecd0; }
+    .status.err { display: block; background: #fdecea; color: #c62828; border: 1px solid #f5c6c3; }
+    .status.info { display: block; background: #eef2ff; color: #3949ab; border: 1px solid #d0d8ff; }
+    .status.rec { display: block; background: #fdecea; color: #c62828; border: 1px solid #f5c6c3; text-align: left; }
+    .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #e53935; margin-right: 6px;
+           animation: blink 1s infinite; }
+    @keyframes blink { 50% { opacity: .2; } }
+    audio { width: 100%; margin-top: 14px; display: none; }
+    .result { margin-top: 16px; padding: 16px; border: 1px solid #cfe0ff; border-radius: 8px; background: #f3f8ff; display: none; }
+    .result h3 { margin: 0 0 10px; font-size: 15px; color: #444; }
+    .transcript { background: #fff; border: 1px solid #e3e3e3; border-radius: 6px; padding: 12px; font-size: 14px;
+                  color: #333; min-height: 44px; white-space: pre-wrap; }
+    .copy { margin-top: 10px; flex: none; padding: 8px 14px; background: #eee; color: #333; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🎙️ Speech-to-Text</h1>
+    <p class="subtitle">Powered by Azure Cognitive Services</p>
+
+    <label for="language">Language:</label>
+    <select id="language">
+      <option value="en-US">English (US)</option>
+      <option value="tr-TR">Türkçe</option>
+    </select>
+
+    <label>Record or upload audio to convert to text:</label>
+    <div class="row">
+      <button class="primary" id="startBtn">🎙️ Start Recording</button>
+      <button class="danger" id="stopBtn" disabled>⏹ Stop Recording</button>
+      <input class="file-input" type="file" id="fileInput" accept="audio/*">
+    </div>
+
+    <audio id="preview" controls></audio>
+
+    <div class="status" id="status"></div>
+
+    <div class="row" style="margin-top:14px">
+      <button class="primary" id="transcribeBtn" disabled>📝 Transcribe Audio</button>
+      <button class="secondary" id="clearBtn">Clear</button>
+    </div>
+
+    <div class="result" id="result">
+      <h3>Transcription:</h3>
+      <div class="transcript" id="transcript"></div>
+      <button class="copy" id="copyBtn">📋 Copy Text</button>
+    </div>
+  </div>
+
+  <script>
+    const startBtn = document.getElementById("startBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const fileInput = document.getElementById("fileInput");
+    const transcribeBtn = document.getElementById("transcribeBtn");
+    const preview = document.getElementById("preview");
+    const statusEl = document.getElementById("status");
+    const resultEl = document.getElementById("result");
+    const transcriptEl = document.getElementById("transcript");
+    const languageEl = document.getElementById("language");
+
+    let recorder = null;     // MediaRecorder
+    let chunks = [];         // recorded pieces
+    let currentAudio = null; // Blob/File that will be transcribed
+
+    function showStatus(msg, type) {
+      statusEl.innerHTML = msg;
+      statusEl.className = "status " + type;
+    }
+
+    function setAudio(blob) {
+      currentAudio = blob;
+      preview.src = URL.createObjectURL(blob);
+      preview.style.display = "block";
+      transcribeBtn.disabled = false;
+    }
+
+    // --- 1) Microphone recording ---------------------------------------------
+    startBtn.addEventListener("click", async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        recorder = new MediaRecorder(stream);
+        chunks = [];
+        recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+        recorder.onstop = () => {
+          stream.getTracks().forEach(t => t.stop());           // release the mic
+          setAudio(new Blob(chunks, { type: recorder.mimeType }));
+          showStatus("Recording finished. Press “Transcribe Audio”.", "info");
+        };
+        recorder.start();
+        fileInput.value = "";
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+        transcribeBtn.disabled = true;
+        showStatus('<span class="dot"></span>Recording...', "rec");
+      } catch (e) {
+        showStatus("✗ Microphone access denied: " + e.message, "err");
+      }
+    });
+
+    stopBtn.addEventListener("click", () => {
+      if (recorder && recorder.state === "recording") recorder.stop();
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+    });
+
+    // --- 2) File upload ------------------------------------------------------
+    fileInput.addEventListener("change", () => {
+      if (fileInput.files.length) {
+        setAudio(fileInput.files[0]);
+        showStatus("File selected: " + fileInput.files[0].name, "info");
+      }
+    });
+
+    // --- 3) Convert any audio (webm, mp4, mp3, wav...) to 16 kHz mono WAV -----
+    // Azure reads WAV most reliably, so we convert in the browser (no ffmpeg needed).
+    async function toWav16k(blob) {
+      const ctx = new AudioContext();
+      const decoded = await ctx.decodeAudioData(await blob.arrayBuffer());
+      ctx.close();
+
+      const rate = 16000;
+      const offline = new OfflineAudioContext(1, Math.ceil(decoded.duration * rate), rate);
+      const src = offline.createBufferSource();
+      src.buffer = decoded;
+      src.connect(offline.destination);
+      src.start();
+      const rendered = await offline.startRendering();
+      return encodeWav(rendered.getChannelData(0), rate);
+    }
+
+    function encodeWav(samples, rate) {
+      const buffer = new ArrayBuffer(44 + samples.length * 2);
+      const view = new DataView(buffer);
+      const writeStr = (off, s) => { for (let i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i)); };
+
+      writeStr(0, "RIFF"); view.setUint32(4, 36 + samples.length * 2, true); writeStr(8, "WAVE");
+      writeStr(12, "fmt "); view.setUint32(16, 16, true); view.setUint16(20, 1, true);  // PCM
+      view.setUint16(22, 1, true);                                                     // mono
+      view.setUint32(24, rate, true); view.setUint32(28, rate * 2, true);
+      view.setUint16(32, 2, true); view.setUint16(34, 16, true);                       // 16-bit
+      writeStr(36, "data"); view.setUint32(40, samples.length * 2, true);
+
+      let off = 44;
+      for (let i = 0; i < samples.length; i++, off += 2) {
+        const s = Math.max(-1, Math.min(1, samples[i]));
+        view.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+      }
+      return new Blob([view], { type: "audio/wav" });
+    }
+
+    // --- 4) Send to Flask and show the text ----------------------------------
+    transcribeBtn.addEventListener("click", async () => {
+      if (!currentAudio) { showStatus("Please record or upload audio first.", "err"); return; }
+
+      transcribeBtn.disabled = true;
+      showStatus("Transcribing...", "info");
+
+      try {
+        const wav = await toWav16k(currentAudio);
+        const form = new FormData();
+        form.append("audio", wav, "audio.wav");
+        form.append("language", languageEl.value);
+
+        const res = await fetch("/transcribe", { method: "POST", body: form });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || "Server error");
+
+        transcriptEl.textContent = data.text;
+        resultEl.style.display = "block";
+        showStatus("✓ Audio transcribed successfully!", "ok");
+      } catch (e) {
+        showStatus("✗ " + e.message, "err");
+      } finally {
+        transcribeBtn.disabled = false;
+      }
+    });
+
+    // --- 5) Copy & Clear -----------------------------------------------------
+    document.getElementById("copyBtn").addEventListener("click", async () => {
+      await navigator.clipboard.writeText(transcriptEl.textContent);
+      showStatus("✓ Copied to clipboard!", "ok");
+    });
+
+    document.getElementById("clearBtn").addEventListener("click", () => {
+      currentAudio = null;
+      fileInput.value = "";
+      preview.removeAttribute("src");
+      preview.style.display = "none";
+      resultEl.style.display = "none";
+      transcriptEl.textContent = "";
+      statusEl.className = "status";
+      transcribeBtn.disabled = true;
+    });
+  </script>
+</body>
+</html>
