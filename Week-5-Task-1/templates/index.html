@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text-to-Speech</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 16px;
+    }
+    .card {
+      background: #fff; border-radius: 14px; padding: 32px; width: 100%; max-width: 520px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.2);
+    }
+    h1 { text-align: center; margin: 0; color: #333; }
+    .subtitle { text-align: center; color: #888; font-size: 13px; margin: 6px 0 24px; }
+    label { font-size: 14px; color: #444; display: block; margin-bottom: 6px; }
+    textarea, select {
+      width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;
+      font-family: inherit;
+    }
+    textarea { height: 110px; resize: vertical; }
+    select { margin-bottom: 14px; }
+    .buttons { display: flex; gap: 10px; margin-top: 14px; }
+    button {
+      flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;
+      font-weight: 600;
+    }
+    .primary { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; }
+    .primary:disabled { opacity: .6; cursor: wait; }
+    .secondary { background: #eee; color: #333; }
+    .status { margin-top: 16px; padding: 12px; border-radius: 8px; font-size: 14px; text-align: center; display: none; }
+    .status.ok { display: block; background: #e8f8ec; color: #2e7d32; border: 1px solid #c8ecd0; }
+    .status.err { display: block; background: #fdecea; color: #c62828; border: 1px solid #f5c6c3; }
+    .status.info { display: block; background: #eef2ff; color: #3949ab; border: 1px solid #d0d8ff; }
+    .result { margin-top: 16px; padding: 16px; border: 1px solid #e5e5e5; border-radius: 8px; background: #fafafa; display: none; }
+    .result h3 { margin: 0 0 10px; font-size: 15px; color: #444; }
+    audio { width: 100%; }
+    .download {
+      display: block; text-align: center; margin-top: 12px; padding: 11px; border-radius: 8px;
+      background: #3399ff; color: #fff; text-decoration: none; font-weight: 600; font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🎤 Text-to-Speech</h1>
+    <p class="subtitle">Powered by Azure Cognitive Services</p>
+
+    <label for="voice">Voice:</label>
+    <select id="voice">
+      <option value="en-US-JennyNeural">English (US) – Jenny</option>
+      <option value="en-US-GuyNeural">English (US) – Guy</option>
+      <option value="tr-TR-EmelNeural">Türkçe – Emel</option>
+      <option value="tr-TR-AhmetNeural">Türkçe – Ahmet</option>
+    </select>
+
+    <label for="text">Enter text to convert to speech:</label>
+    <textarea id="text" placeholder="Hello, EE471 class"></textarea>
+
+    <div class="buttons">
+      <button class="primary" id="synthBtn">🔊 Synthesize Speech</button>
+      <button class="secondary" id="clearBtn">Clear</button>
+    </div>
+
+    <div class="status" id="status"></div>
+
+    <div class="result" id="result">
+      <h3>Generated Audio:</h3>
+      <audio id="player" controls></audio>
+      <a class="download" id="downloadLink" download="speech.wav">⬇ Download Audio</a>
+    </div>
+  </div>
+
+  <script>
+    const textEl = document.getElementById("text");
+    const voiceEl = document.getElementById("voice");
+    const synthBtn = document.getElementById("synthBtn");
+    const statusEl = document.getElementById("status");
+    const resultEl = document.getElementById("result");
+    const player = document.getElementById("player");
+    const downloadLink = document.getElementById("downloadLink");
+    let currentUrl = null;
+
+    function showStatus(msg, type) {
+      statusEl.textContent = msg;
+      statusEl.className = "status " + type;
+    }
+
+    // Send text to Flask, receive a .wav file back
+    synthBtn.addEventListener("click", async () => {
+      const text = textEl.value.trim();
+      if (!text) { showStatus("Please enter some text.", "err"); return; }
+
+      synthBtn.disabled = true;
+      showStatus("Synthesizing...", "info");
+
+      try {
+        const res = await fetch("/synthesize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, voice: voiceEl.value })
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || "Server error");
+        }
+
+        const blob = await res.blob();
+        if (currentUrl) URL.revokeObjectURL(currentUrl);
+        currentUrl = URL.createObjectURL(blob);
+
+        player.src = currentUrl;
+        downloadLink.href = currentUrl;
+        resultEl.style.display = "block";
+        player.play();
+        showStatus("✓ Speech synthesized successfully!", "ok");
+      } catch (e) {
+        showStatus("✗ " + e.message, "err");
+      } finally {
+        synthBtn.disabled = false;
+      }
+    });
+
+    document.getElementById("clearBtn").addEventListener("click", () => {
+      textEl.value = "";
+      statusEl.className = "status";
+      resultEl.style.display = "none";
+      player.removeAttribute("src");
+    });
+  </script>
+</body>
+</html>
