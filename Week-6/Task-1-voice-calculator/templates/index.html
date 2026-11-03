@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Calculator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="layout">
+        <!-- Microphone button on the left: voice commands -->
+        <button id="mic" class="mic" title="Click and speak: five, plus, two, is">
+            <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true">
+                <path fill="currentColor" d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/>
+            </svg>
+        </button>
+
+        <div class="calculator">
+            <div class="display">
+                <div id="expression" class="expression"></div>
+                <div id="display" class="value">0</div>
+            </div>
+
+            <div class="buttons">
+                <button class="number" data-value="7">7</button>
+                <button class="number" data-value="8">8</button>
+                <button class="number" data-value="9">9</button>
+                <button class="operator" data-value="/">÷</button>
+
+                <button class="number" data-value="4">4</button>
+                <button class="number" data-value="5">5</button>
+                <button class="number" data-value="6">6</button>
+                <button class="operator" data-value="*">×</button>
+
+                <button class="number" data-value="1">1</button>
+                <button class="number" data-value="2">2</button>
+                <button class="number" data-value="3">3</button>
+                <button class="operator" data-value="-">−</button>
+
+                <button class="number" data-value="0">0</button>
+                <button class="number" data-value=".">.</button>
+                <button id="equals" data-value="=">=</button>
+                <button class="operator" data-value="+">+</button>
+            </div>
+
+            <div id="error" class="error"></div>
+        </div>
+    </div>
+
+    <div id="voiceStatus" class="voice-status">Press a button to hear it, or click 🎙️ and say “five, plus, two, is”.</div>
+    <div id="heard" class="heard"></div>
+
+    <!-- Azure Speech SDK for the browser (real-time recognition from the microphone) -->
+    <script src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@1.53.0/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
