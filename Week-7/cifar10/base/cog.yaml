@@ -1,0 +1,8 @@
+build:
+  gpu: false
+  python_version: "3.11"
+  python_packages:
+    - "torch==2.4.1"
+    - "torchvision==0.19.1"
+    - "pillow"
+predict: "predict.py:Predictor"
