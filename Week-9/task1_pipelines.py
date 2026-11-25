@@ -102,13 +102,13 @@ def translate():
     print(translator(text)[0]["translation_text"])
 
 
-def image(path="sample.jpg"):
+def image(path="sample.webp"):
     clf = pipeline("image-classification", model="google/vit-base-patch16-224")
     for r in clf(path, top_k=3):
         print(f"{r['label']:<35} {r['score']:.3f}")
 
 
-def asr(path="sample.wav"):
+def asr(path="sample.flac"):
     pipe = pipeline("automatic-speech-recognition", model="openai/whisper-large-v3",
                     chunk_length_s=30)
     print(pipe(path)["text"])
